@@ -1,0 +1,23 @@
+/target
+
+# Ignore environments
+.env
+.env.*
+!.env.example
+
+# Cargo files
+**/*.rs.bk
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# DB
+data/
+*.sqlite
+*.sqlite-journal
+
+# Local Documents
+*.xls
+ROADMAP_*.md
+TDR_*.md
