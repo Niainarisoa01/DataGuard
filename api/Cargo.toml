@@ -4,6 +4,7 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+default-run = "api"
 
 [dependencies]
 axum = { version = "0.7", features = ["multipart", "macros"] }
@@ -27,3 +28,7 @@ async-stream = "0.3"
 anyhow = "1.0"
 shared = { path = "../shared" }
 argon2 = { workspace = true }
+
+[dev-dependencies]
+tower = { version = "0.4", features = ["util"] }
+http-body-util = "0.1"

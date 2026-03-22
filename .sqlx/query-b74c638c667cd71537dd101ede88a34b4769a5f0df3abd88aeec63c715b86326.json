@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO accounts (email, plan) VALUES ($1, 'pro') ON CONFLICT (email) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b74c638c667cd71537dd101ede88a34b4769a5f0df3abd88aeec63c715b86326"
+}

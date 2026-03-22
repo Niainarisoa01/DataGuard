@@ -50,5 +50,6 @@ pub struct UsageLog {
     pub status_code: i32,
     pub is_valid: bool,
     pub duration_ms: i32,
+    pub records_processed: i32,
     pub created_at: DateTime<Utc>,
 }
