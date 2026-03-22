@@ -6,8 +6,6 @@ use axum::{
 use bytes::Bytes;
 use csv_async::AsyncReaderBuilder;
 use jsonschema::JSONSchema;
-use serde_json::Value;
-use std::collections::HashSet;
 use std::sync::Arc;
 use tokio_util::compat::TokioAsyncReadCompatExt;
 use uuid::Uuid;
@@ -63,7 +61,7 @@ pub async fn validate_csv(
                             Ok(chunk) => yield std::io::Result::Ok(chunk),
                             Err(e) => {
                                 let err_msg = format!("Extrait Multipart coupé ou rejeté: {}", e);
-                                yield std::io::Result::Err(std::io::Error::new(std::io::ErrorKind::Other, err_msg));
+                                yield std::io::Result::Err(std::io::Error::other(err_msg));
                             }
                         }
                     }
@@ -127,7 +125,7 @@ pub async fn validate_csv(
                 }
 
                 if row_num > 1 {
-                    let total_records = (row_num - 1) as i32;
+                    let total_records = row_num - 1;
                     let duration = start_time.elapsed().as_millis() as i32;
                     let _ = sqlx::query!(
                         "INSERT INTO usage_logs (account_id, schema_id, endpoint, status_code, is_valid, duration_ms, records_processed) 
