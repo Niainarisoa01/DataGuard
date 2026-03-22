@@ -42,10 +42,7 @@ pub fn build_app(state: AppState) -> Router {
             handlers::auth::auth_middleware,
         ));
 
-    Router::new()
-        .route("/health", get(|| async { "OK" }))
-        .nest("/v1", v1_routes)
-        .with_state(state)
+    Router::new().route("/health", get(|| async { "OK" })).nest("/v1", v1_routes).with_state(state)
 }
 
 #[tokio::main]

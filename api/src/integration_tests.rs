@@ -5,7 +5,7 @@ use argon2::{
 };
 use axum::{
     body::Body,
-    http::{header, Request, StatusCode, Response},
+    http::{header, Request, Response, StatusCode},
     Router,
 };
 use http_body_util::BodyExt;
@@ -31,10 +31,7 @@ async fn setup_test_account(pool: &PgPool) -> (Uuid, Uuid, String) {
 
     let salt = SaltString::generate(&mut OsRng);
     let argon2 = Argon2::default();
-    let password_hash = argon2
-        .hash_password(secret.as_bytes(), &salt)
-        .unwrap()
-        .to_string();
+    let password_hash = argon2.hash_password(secret.as_bytes(), &salt).unwrap().to_string();
 
     sqlx::query!(
         "INSERT INTO api_keys (id, account_id, key_hash, name) VALUES ($1, $2, $3, 'Test Key')",
@@ -56,17 +53,10 @@ async fn execute_request(app: Router, req: Request<Body>) -> Response<Body> {
 
 #[sqlx::test(migrations = "../migrations")]
 async fn test_auth_missing_key(pool: PgPool) {
-    let state = AppState {
-        db: pool,
-        schema_cache: Cache::new(10),
-    };
+    let state = AppState { db: pool, schema_cache: Cache::new(10) };
     let app = build_app(state);
 
-    let req = Request::builder()
-        .uri("/v1/schemas")
-        .method("GET")
-        .body(Body::empty())
-        .unwrap();
+    let req = Request::builder().uri("/v1/schemas").method("GET").body(Body::empty()).unwrap();
 
     let response = execute_request(app, req).await;
     assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
@@ -74,10 +64,7 @@ async fn test_auth_missing_key(pool: PgPool) {
 
 #[sqlx::test(migrations = "../migrations")]
 async fn test_auth_invalid_key(pool: PgPool) {
-    let state = AppState {
-        db: pool,
-        schema_cache: Cache::new(10),
-    };
+    let state = AppState { db: pool, schema_cache: Cache::new(10) };
     let app = build_app(state);
 
     let req = Request::builder()
@@ -93,10 +80,7 @@ async fn test_auth_invalid_key(pool: PgPool) {
 
 #[sqlx::test(migrations = "../migrations")]
 async fn test_auth_valid_key(pool: PgPool) {
-    let state = AppState {
-        db: pool.clone(),
-        schema_cache: Cache::new(10),
-    };
+    let state = AppState { db: pool.clone(), schema_cache: Cache::new(10) };
     let (_, _, full_key) = setup_test_account(&pool).await;
     let app = build_app(state);
 
@@ -113,10 +97,7 @@ async fn test_auth_valid_key(pool: PgPool) {
 
 #[sqlx::test(migrations = "../migrations")]
 async fn test_validate_engine_scenarios(pool: PgPool) {
-    let state = AppState {
-        db: pool.clone(),
-        schema_cache: Cache::new(10),
-    };
+    let state = AppState { db: pool.clone(), schema_cache: Cache::new(10) };
     let (account_id, _, full_key) = setup_test_account(&pool).await;
     let schema_id = Uuid::new_v4();
 
@@ -185,7 +166,11 @@ async fn test_validate_engine_scenarios(pool: PgPool) {
     let body: serde_json::Value = serde_json::from_slice(&bytes_missing).unwrap();
     println!("MISSING BODY RESP: {:?}", body);
     assert_eq!(body["is_valid"], false);
-    assert!(body["errors"].as_array().unwrap().iter().any(|e| e.as_str().unwrap().contains("required")));
+    assert!(body["errors"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|e| e.as_str().unwrap().contains("required")));
 
     // Scenario C: Wrong type
     let req_body_type = json!({
@@ -203,7 +188,11 @@ async fn test_validate_engine_scenarios(pool: PgPool) {
     let bytes_type = resp_type.into_body().collect().await.unwrap().to_bytes();
     let body: serde_json::Value = serde_json::from_slice(&bytes_type).unwrap();
     assert_eq!(body["is_valid"], false);
-    assert!(body["errors"].as_array().unwrap().iter().any(|e| e.as_str().unwrap().contains("type")));
+    assert!(body["errors"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|e| e.as_str().unwrap().contains("type")));
 
     // Scenario D: Wrong format
     let req_body_format = json!({
@@ -221,5 +210,9 @@ async fn test_validate_engine_scenarios(pool: PgPool) {
     let bytes_format = resp_format.into_body().collect().await.unwrap().to_bytes();
     let body: serde_json::Value = serde_json::from_slice(&bytes_format).unwrap();
     assert_eq!(body["is_valid"], false, "FORMAT RESP BODY: {:?}", body);
-    assert!(body["errors"].as_array().unwrap().iter().any(|e| e.as_str().unwrap().contains("email")));
+    assert!(body["errors"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|e| e.as_str().unwrap().contains("email")));
 }
