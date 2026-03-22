@@ -1,5 +1,9 @@
 use crate::handlers::auth::AuthenticatedAccount;
-use axum::{extract::{Extension, State}, http::StatusCode, Json};
+use axum::{
+    extract::{Extension, State},
+    http::StatusCode,
+    Json,
+};
 use jsonschema::JSONSchema;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;

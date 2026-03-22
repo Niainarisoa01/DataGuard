@@ -47,10 +47,10 @@ async fn main() -> anyhow::Result<()> {
             get(handlers::schemas::list_schemas).post(handlers::schemas::create_schema),
         )
         .route(
-            "/schemas/:id", 
+            "/schemas/:id",
             get(handlers::schemas::get_schema)
                 .put(handlers::schemas::update_schema)
-                .delete(handlers::schemas::delete_schema)
+                .delete(handlers::schemas::delete_schema),
         )
         .route("/validate", post(handlers::validate::validate_payload))
         .route("/validate/csv/:schema_id", post(handlers::csv::validate_csv))

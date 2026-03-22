@@ -126,7 +126,7 @@ pub async fn update_schema(
         "UPDATE schemas SET name = $1, description = $2, updated_at = NOW() WHERE id = $3 RETURNING *",
         payload.name,
         payload.description,
-        id 
+        id
     )
     .fetch_one(&mut *tx)
     .await
@@ -166,7 +166,8 @@ pub async fn delete_schema(
 ) -> Result<StatusCode, StatusCode> {
     let result = sqlx::query!(
         "DELETE FROM schemas WHERE id = $1 AND account_id = $2",
-        id, account.account_id
+        id,
+        account.account_id
     )
     .execute(&state.db)
     .await

@@ -133,8 +133,8 @@ pub async fn validate_csv(
                          account.api_key_id,
                          schema_id_uuid,
                          "/v1/validate/csv",
-                         200,    
-                         true,   
+                         200,
+                         true,
                          duration,
                          total_records
                     )
@@ -142,7 +142,7 @@ pub async fn validate_csv(
                     .await;
                 }
 
-                return; 
+                return;
             }
         }
 

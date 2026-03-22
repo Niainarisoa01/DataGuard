@@ -1,12 +1,7 @@
-use argon2::{Argon2, PasswordHash, PasswordVerifier};
-use axum::{
-    extract::Request,
-    http::StatusCode,
-    middleware::Next,
-    response::Response,
-};
-use uuid::Uuid;
 use crate::AppState;
+use argon2::{Argon2, PasswordHash, PasswordVerifier};
+use axum::{extract::Request, http::StatusCode, middleware::Next, response::Response};
+use uuid::Uuid;
 
 #[derive(Clone, Debug)]
 pub struct AuthenticatedAccount {
@@ -58,7 +53,8 @@ pub async fn auth_middleware(
     };
 
     // Verify argon2 hash
-    let parsed_hash = PasswordHash::new(&record.key_hash).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let parsed_hash =
+        PasswordHash::new(&record.key_hash).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     if Argon2::default().verify_password(secret.as_bytes(), &parsed_hash).is_err() {
         return Err(StatusCode::UNAUTHORIZED);
     }
@@ -71,10 +67,7 @@ pub async fn auth_middleware(
             .await;
     });
 
-    let auth_acc = AuthenticatedAccount {
-        account_id: record.account_id,
-        api_key_id: key_id,
-    };
+    let auth_acc = AuthenticatedAccount { account_id: record.account_id, api_key_id: key_id };
 
     request.extensions_mut().insert(auth_acc);
 
