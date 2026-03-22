@@ -1,8 +1,8 @@
-use axum::{extract::State, Json, http::StatusCode};
+use axum::{extract::State, http::StatusCode, Json};
 use jsonschema::JSONSchema;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 use std::sync::Arc;
+use uuid::Uuid;
 
 use crate::AppState;
 
@@ -22,9 +22,9 @@ pub async fn validate_payload(
     State(state): State<AppState>,
     Json(payload): Json<ValidateRequest>,
 ) -> Result<Json<ValidateResponse>, StatusCode> {
-    
     // Check cache first
-    let schema_json = if let Some(cached_schema) = state.schema_cache.get(&payload.schema_id).await {
+    let schema_json = if let Some(cached_schema) = state.schema_cache.get(&payload.schema_id).await
+    {
         cached_schema
     } else {
         // Fetch from DB
@@ -53,16 +53,14 @@ pub async fn validate_payload(
         tracing::error!("Invalid schema compilation: {:?}", e);
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
-    
+
     let is_valid = compiled_schema.is_valid(&payload.data);
 
     let mut errors = None;
     if !is_valid {
         let result = compiled_schema.validate(&payload.data);
         if let Err(validation_errors) = result {
-            let error_strings: Vec<String> = validation_errors
-                .map(|e| format!("{}", e))
-                .collect();
+            let error_strings: Vec<String> = validation_errors.map(|e| format!("{}", e)).collect();
             errors = Some(error_strings);
         }
     }

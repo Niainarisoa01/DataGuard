@@ -1,7 +1,7 @@
 use axum::{
+    extract::DefaultBodyLimit,
     routing::{get, post},
     Router,
-    extract::DefaultBodyLimit,
 };
 use shared::db::create_pool;
 use std::net::SocketAddr;
@@ -43,7 +43,10 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .route("/health", get(|| async { "OK" }))
-        .route("/v1/schemas", get(handlers::schemas::list_schemas).post(handlers::schemas::create_schema))
+        .route(
+            "/v1/schemas",
+            get(handlers::schemas::list_schemas).post(handlers::schemas::create_schema),
+        )
         .route("/v1/schemas/:id", get(handlers::schemas::get_schema))
         .route("/v1/validate", post(handlers::validate::validate_payload))
         .route("/v1/validate/csv/:schema_id", post(handlers::csv::validate_csv))
