@@ -37,6 +37,7 @@ chrono = { version = "0.4", features = ["serde"] }
 moka = { version = "0.12", features = ["future"] }
 thiserror = "1.0"
 anyhow = "1.0"
+argon2 = "0.5"
 
 # Logging & Tracing
 tracing = "0.1"

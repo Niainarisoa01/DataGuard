@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, account_id, name, description, created_at, updated_at FROM schemas WHERE id = $1",
+  "query": "UPDATE schemas SET name = $1, description = $2, updated_at = NOW() WHERE id = $3 RETURNING *",
   "describe": {
     "columns": [
       {
@@ -36,6 +36,8 @@
     ],
     "parameters": {
       "Left": [
+        "Varchar",
+        "Text",
         "Uuid"
       ]
     },
@@ -48,5 +50,5 @@
       false
     ]
   },
-  "hash": "fd742250b03561d8afd7ccb72a3e904886388a0e2790f1c5c92566d9d95dbac6"
+  "hash": "8eb9339a75f672949ba3d3dbdd35bb436a8b4fe1e7bdcc83a4e27c19eaaac379"
 }

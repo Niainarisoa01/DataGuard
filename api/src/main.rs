@@ -41,16 +41,28 @@ async fn main() -> anyhow::Result<()> {
 
     let state = AppState { db: pool, schema_cache };
 
-    let app = Router::new()
-        .route("/health", get(|| async { "OK" }))
+    let v1_routes = Router::new()
         .route(
-            "/v1/schemas",
+            "/schemas",
             get(handlers::schemas::list_schemas).post(handlers::schemas::create_schema),
         )
-        .route("/v1/schemas/:id", get(handlers::schemas::get_schema))
-        .route("/v1/validate", post(handlers::validate::validate_payload))
-        .route("/v1/validate/csv/:schema_id", post(handlers::csv::validate_csv))
+        .route(
+            "/schemas/:id", 
+            get(handlers::schemas::get_schema)
+                .put(handlers::schemas::update_schema)
+                .delete(handlers::schemas::delete_schema)
+        )
+        .route("/validate", post(handlers::validate::validate_payload))
+        .route("/validate/csv/:schema_id", post(handlers::csv::validate_csv))
         .layer(DefaultBodyLimit::max(1024 * 1024 * 1024)) // 1GB limite pour CSV massive
+        .layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            handlers::auth::auth_middleware,
+        ));
+
+    let app = Router::new()
+        .route("/health", get(|| async { "OK" }))
+        .nest("/v1", v1_routes)
         .with_state(state);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));

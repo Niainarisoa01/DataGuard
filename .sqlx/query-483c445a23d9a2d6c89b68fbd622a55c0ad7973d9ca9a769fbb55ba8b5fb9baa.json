@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, account_id, name, description, created_at, updated_at FROM schemas",
+  "query": "SELECT id, account_id, name, description, created_at, updated_at FROM schemas WHERE id = $1 AND account_id = $2",
   "describe": {
     "columns": [
       {
@@ -35,7 +35,10 @@
       }
     ],
     "parameters": {
-      "Left": []
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
     },
     "nullable": [
       false,
@@ -46,5 +49,5 @@
       false
     ]
   },
-  "hash": "7caa4da197d5cec729d3ecdaea30baa2b1d5e51f14b2a1abc951adfd47172877"
+  "hash": "483c445a23d9a2d6c89b68fbd622a55c0ad7973d9ca9a769fbb55ba8b5fb9baa"
 }

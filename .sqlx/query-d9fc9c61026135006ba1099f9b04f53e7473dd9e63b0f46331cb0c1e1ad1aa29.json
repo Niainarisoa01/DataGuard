@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT json_schema FROM schema_versions WHERE schema_id = $1 ORDER BY version DESC LIMIT 1",
+  "query": "SELECT sv.json_schema FROM schema_versions sv JOIN schemas s ON s.id = sv.schema_id WHERE sv.schema_id = $1 AND s.account_id = $2 ORDER BY sv.version DESC LIMIT 1",
   "describe": {
     "columns": [
       {
@@ -11,6 +11,7 @@
     ],
     "parameters": {
       "Left": [
+        "Uuid",
         "Uuid"
       ]
     },
@@ -18,5 +19,5 @@
       false
     ]
   },
-  "hash": "06dee11d98af5f6566e83feb327954c426b22874acdc84198b2bf8b1d2867c64"
+  "hash": "d9fc9c61026135006ba1099f9b04f53e7473dd9e63b0f46331cb0c1e1ad1aa29"
 }

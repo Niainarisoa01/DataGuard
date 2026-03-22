@@ -1,6 +1,7 @@
+use crate::handlers::auth::AuthenticatedAccount;
 use axum::{
     body::Body,
-    extract::{Multipart, Path, State},
+    extract::{Extension, Multipart, Path, State},
     http::{header, Response, StatusCode},
 };
 use bytes::Bytes;
@@ -13,17 +14,17 @@ use uuid::Uuid;
 use crate::AppState;
 
 pub async fn validate_csv(
+    Extension(account): Extension<AuthenticatedAccount>,
     State(state): State<AppState>,
     Path(schema_id): Path<Uuid>,
     mut multipart: Multipart,
 ) -> Result<Response<Body>, StatusCode> {
-    // Retrieve schema from cache or DB BEFORE starting the stream
     let schema_json = if let Some(cached) = state.schema_cache.get(&schema_id).await {
         cached
     } else {
         let record = sqlx::query!(
-            "SELECT json_schema FROM schema_versions WHERE schema_id = $1 ORDER BY version DESC LIMIT 1",
-            schema_id
+            "SELECT sv.json_schema FROM schema_versions sv JOIN schemas s ON s.id = sv.schema_id WHERE sv.schema_id = $1 AND s.account_id = $2 ORDER BY sv.version DESC LIMIT 1",
+            schema_id, account.account_id
         )
         .fetch_optional(&state.db)
         .await
@@ -42,7 +43,6 @@ pub async fn validate_csv(
     let compiled_schema =
         JSONSchema::compile(&schema_json).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    // Channel for streaming out the CSV
     let (tx, rx) = tokio::sync::mpsc::channel::<Result<Bytes, std::convert::Infallible>>(1000);
 
     let db = state.db.clone();
@@ -50,7 +50,6 @@ pub async fn validate_csv(
     let start_time = std::time::Instant::now();
 
     tokio::spawn(async move {
-        // Send header
         let _ = tx.send(Ok(Bytes::from("row_number,errors,raw_data\n"))).await;
 
         while let Ok(Some(mut field)) = multipart.next_field().await {
@@ -128,12 +127,14 @@ pub async fn validate_csv(
                     let total_records = row_num - 1;
                     let duration = start_time.elapsed().as_millis() as i32;
                     let _ = sqlx::query!(
-                        "INSERT INTO usage_logs (account_id, schema_id, endpoint, status_code, is_valid, duration_ms, records_processed) 
-                         VALUES ((SELECT account_id FROM schemas WHERE id = $1), $1, $2, $3, $4, $5, $6)",
+                        "INSERT INTO usage_logs (account_id, api_key_id, schema_id, endpoint, status_code, is_valid, duration_ms, records_processed) 
+                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+                         account.account_id,
+                         account.api_key_id,
                          schema_id_uuid,
                          "/v1/validate/csv",
-                         200,    // status_code HTTP OK
-                         true,   // API call itself is valid
+                         200,    
+                         true,   
                          duration,
                          total_records
                     )
@@ -141,7 +142,7 @@ pub async fn validate_csv(
                     .await;
                 }
 
-                return; // Done processing
+                return; 
             }
         }
 
