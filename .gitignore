@@ -21,3 +21,10 @@ data/
 *.xls
 ROADMAP_*.md
 TDR_*.md
+
+# Tests & Scripts de données
+generate_csv.py
+test_csv_streaming.sh
+test_izy.sh
+test_mvp.sh
+benchmark.sh
